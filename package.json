@@ -1,0 +1,28 @@
+{
+  "name": "challenge-18",
+  "version": "1.0.0",
+  "description": "Learning node js",
+  "main": "C18.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ramdaniprnm/Challenge-18.git"
+  },
+  "keywords": [
+    "Javascript",
+    "node",
+    "js"
+  ],
+  "author": "Ramdani",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/ramdaniprnm/Challenge-18/issues"
+  },
+  "homepage": "https://github.com/ramdaniprnm/Challenge-18#readme",
+  "dependencies": {
+    "cli-table": "^0.3.11",
+    "sqlite3": "^5.1.7"
+  }
+}
