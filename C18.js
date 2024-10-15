@@ -270,6 +270,38 @@ const addMahasiswa = () => {
   });
 };
 
+const deleteMahasiswa = () => {
+  rl.question("Masukkan NIM Mahasiswa yang akan dihapus: ", (nim) => {
+    // Cek apakah NIM mahasiswa ada dalam database
+    const queryCheckNIM = "SELECT nim FROM mahasiswa WHERE nim = ?";
+
+    db.get(queryCheckNIM, [nim], (err, row) => {
+      if (err) {
+        console.error("Error saat memeriksa NIM: ", err.message);
+        return mahasiswaMenu();
+      }
+
+      if (!row) {
+        console.log(`Mahasiswa dengan NIM '${nim}' tidak ditemukan.`);
+        return mahasiswaMenu();
+      }
+
+      // Jika NIM ditemukan, lakukan penghapusan
+      const queryDeleteMahasiswa = "DELETE FROM mahasiswa WHERE nim = ?";
+
+      db.run(queryDeleteMahasiswa, [nim], (err) => {
+        if (err) {
+          console.error("Error saat menghapus mahasiswa: ", err.message);
+          return mahasiswaMenu();
+        }
+
+        console.log(`Data Mahasiswa dengan NIM '${nim}' telah dihapus.`);
+        mahasiswaMenu(); // Kembali ke menu mahasiswa setelah penghapusan
+      });
+    });
+  });
+};
+
 // Fungsi untuk menanyakan username
 const askUsername = (callback) => {
   rl.question("username: ", (username) => {
