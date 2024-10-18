@@ -211,7 +211,6 @@ const addMahasiswa = () => {
         rl.question("Nama: ", (nama) => {
           rl.question("Tanggal Lahir: ", (tgl_lahir) => {
             rl.question("Alamat: ", (alamat) => {
-              // Fetch available jurusan
               const queryJurusan = "SELECT * FROM jurusan";
               db.all(queryJurusan, [], (err, jurusanRows) => {
                 if (err) {
@@ -254,7 +253,7 @@ const addMahasiswa = () => {
                       console.log(
                         `\nMahasiswa dengan NIM '${nim}' telah ditambahkan.`
                       );
-                      listMahasiswa(); // Display updated list setelah menambahkan mahasiswa baru
+                      listMahasiswa();
                     }
                   );
                 });
@@ -269,7 +268,7 @@ const addMahasiswa = () => {
 
 const deleteMahasiswa = () => {
   rl.question("Masukkan NIM Mahasiswa yang akan dihapus: ", (nim) => {
-    // Cek apakah NIM mahasiswa ada dalam database
+    // Cek NIM mahasiswa
     const queryCheckNIM = "SELECT nim FROM mahasiswa WHERE nim = ?";
 
     db.get(queryCheckNIM, [nim], (err, row) => {
@@ -282,16 +281,13 @@ const deleteMahasiswa = () => {
         console.log(`Mahasiswa dengan NIM '${nim}' tidak ditemukan.`);
         return mahasiswaMenu();
       }
-
       // Jika NIM ditemukan, lakukan penghapusan
       const queryDeleteMahasiswa = "DELETE FROM mahasiswa WHERE nim = ?";
-
       db.run(queryDeleteMahasiswa, [nim], (err) => {
         if (err) {
           console.error("Error saat menghapus mahasiswa: ", err.message);
           return mahasiswaMenu();
         }
-
         console.log(`Data Mahasiswa dengan NIM '${nim}' telah dihapus.`);
         mahasiswaMenu();
       });
@@ -334,22 +330,18 @@ const jurusanMenu = () => {
 
 const listJurusan = () => {
   const query = `SELECT * FROM jurusan`;
-
   db.all(query, [], (err, rows) => {
     if (err) {
       console.error("Error saat mengambil data jurusan: ", err.message);
       return jurusanMenu();
     }
-
     const table = new Table({
       head: ["Kode Jurusan", "Nama Jurusan"],
       colWidths: [15, 30],
     });
-
     rows.forEach((row) => {
       table.push([row.id_jurusan, row.nama_jurusan]);
     });
-
     console.log(table.toString());
     jurusanMenu();
   });
@@ -362,13 +354,11 @@ const searchJurusan = () => {
       FROM jurusan
       WHERE id_jurusan = ?
     `;
-
     db.get(query, [id_jurusan], (err, row) => {
       if (err) {
         console.log("Error saat mengambil data Jurusan: ", err.message);
         return jurusanMenu();
       }
-
       if (row) {
         console.log("\n=============================================");
         console.log(`Detail jurusan dengan Kode Jurusan '${id_jurusan}':`);
@@ -387,11 +377,9 @@ const searchJurusan = () => {
 
 const addJurusan = () => {
   console.log("Lengkapi data di bawah ini untuk menambahkan jurusan baru.");
-
   rl.question("Kode Jurusan: ", (id_jurusan) => {
     const queryCheckJurusan =
       "SELECT id_jurusan FROM jurusan WHERE id_jurusan = ?";
-
     // cek apakah id jurusan sudah ada
     db.get(queryCheckJurusan, [id_jurusan], (err, row) => {
       if (err) {
@@ -411,7 +399,6 @@ const addJurusan = () => {
           INSERT INTO jurusan (id_jurusan, nama_jurusan)
           VALUES (?, ?)
         `;
-
         // Masukkan jurusan baru ke database
         db.run(queryAddJurusan, [id_jurusan, nama_jurusan], (err) => {
           if (err) {
@@ -658,7 +645,7 @@ const matakuliahMenu = () => {
 
 const listMatakuliah = () => {
   const query = `
-    SELECT id_matakuliah, nama
+    SELECT id_matakuliah, nama, sks
     FROM matakuliah
   `;
 
@@ -669,12 +656,12 @@ const listMatakuliah = () => {
     }
 
     const table = new Table({
-      head: ["ID Mata Kuliah", "Nama Mata Kuliah"],
-      colWidths: [20, 30],
+      head: ["ID Mata Kuliah", "Nama Mata Kuliah", "SKS"],
+      colWidths: [20, 30, 15],
     });
 
     rows.forEach((row) => {
-      table.push([row.id_matakuliah, row.nama]);
+      table.push([row.id_matakuliah, row.nama, row.sks]);
     });
 
     console.log(table.toString());
@@ -684,8 +671,7 @@ const listMatakuliah = () => {
 
 const searchMatakuliah = () => {
   rl.question("Masukkan ID Mata Kuliah: ", (id_matakuliah) => {
-    const query = `SELECT id_matakuliah, nama FROM matakuliah WHERE id_matakuliah = ?`;
-
+    const query = `SELECT id_matakuliah, sks, nama FROM matakuliah WHERE id_matakuliah = ?`;
     db.get(query, [id_matakuliah], (err, row) => {
       if (err) {
         console.error("Error saat mencari mata kuliah: ", err.message);
@@ -697,6 +683,7 @@ const searchMatakuliah = () => {
         console.log(`Detail mata kuliah dengan ID '${id_matakuliah}':`);
         console.log(`ID Mata Kuliah  : ${row.id_matakuliah}`);
         console.log(`Nama Mata Kuliah: ${row.nama}`);
+        console.log(`SKS Mata Kuliah: ${row.sks}`);
         console.log("=============================================");
       } else {
         console.log(
@@ -828,7 +815,7 @@ const kontrakMenu = () => {
 const listKontrak = () => {
   const query = `
     SELECT mahasiswa.nim, mahasiswa.nama, matakuliah.nama AS nama_matkul, 
-           dosen.nama AS nama_dosen, assignment.nilai
+           dosen.nama AS nama_dosen, assignment.nilai, assignment.id
     FROM assignment
     JOIN mahasiswa ON assignment.nim = mahasiswa.nim
     JOIN matakuliah ON assignment.id_matakuliah = matakuliah.id_matakuliah
@@ -842,12 +829,13 @@ const listKontrak = () => {
     }
 
     const tableKontrak = new Table({
-      head: ["NIM", "Nama", "Mata Kuliah", "Nama Dosen", "Nilai"],
-      colWidths: [10, 25, 20, 20, 10],
+      head: ["ID", "NIM", "Nama", "Mata Kuliah", "Nama Dosen", "Nilai"],
+      colWidths: [5, 10, 25, 20, 20, 10],
     });
 
     rows.forEach((row) => {
       tableKontrak.push([
+        row.id,
         row.nim,
         row.nama,
         row.nama_matkul,
@@ -873,6 +861,7 @@ const searchKontrak = () => {
         console.error("Error fetching mahasiswa data:", err);
         return kontrakMenu();
       }
+
       const tableMahasiswa = new Table({
         head: [
           "NIM",
@@ -899,12 +888,15 @@ const searchKontrak = () => {
       console.log("\nDaftar Mahasiswa:");
       console.log(tableMahasiswa.toString());
 
-      rl.question("Masukan NIM Mahasiswa: ", (nim) => {
+      rl.question("Masukkan NIM Mahasiswa: ", (nim) => {
         db.all(
           `
-          SELECT assignment.id, assignment.nim, assignment.id_matakuliah, 
-                 assignment.nip, assignment.nilai
+          SELECT assignment.id, assignment.nim, mahasiswa.nama, matakuliah.nama AS nama_matakuliah, 
+                 dosen.nama AS nama_dosen, assignment.nilai
           FROM assignment
+          JOIN mahasiswa ON assignment.nim = mahasiswa.nim
+          JOIN matakuliah ON assignment.id_matakuliah = matakuliah.id_matakuliah
+          JOIN dosen ON assignment.nip = dosen.nip
           WHERE assignment.nim = ?
           `,
           [nim],
@@ -916,24 +908,27 @@ const searchKontrak = () => {
 
             if (rows.length === 0) {
               console.log(
-                `\nMahasiswa dengan NIM '${nim}' tidak memiliki assignment.`
+                `\nMahasiswa dengan NIM '${nim}' tidak memiliki kontrak.`
               );
               return searchKontrak();
             }
+
             console.log(
-              `\nDaftar assignment mahasiswa dengan NIM '${nim}' adalah:`
+              `\nDaftar kontrak mahasiswa dengan NIM '${nim}' adalah:`
             );
+
             const tableAssignment = new Table({
-              head: ["ID", "NIM", "Kode Matakuliah", "Kode Dosen", "Nilai"],
-              colWidths: [5, 10, 20, 15, 10],
+              head: ["ID", "NIM", "Nama", "Mata Kuliah", "Nama Dosen", "Nilai"],
+              colWidths: [5, 10, 25, 20, 20, 10],
             });
 
             rows.forEach((row) => {
               tableAssignment.push([
                 row.id,
                 row.nim,
-                row.id_matakuliah,
-                row.nip,
+                row.nama,
+                row.nama_matakuliah,
+                row.nama_dosen,
                 row.nilai != null ? row.nilai : "",
               ]);
             });
@@ -1185,7 +1180,6 @@ const updateNilaiKontrak = () => {
                 row.nilai != null ? row.nilai : "",
               ]);
             });
-
             console.log(`\nDetail Mahasiswa dengan NIM '${nim}':`);
             console.log(tableDetailKontrak.toString());
             rl.question("Masukkan ID yang akan diubah nilainya: ", (id) => {
@@ -1314,9 +1308,7 @@ const loginPage = () => {
                 } else {
                   attempts += 1;
                   if (attempts >= 5) {
-                    console.log(
-                      "Anda telah gagal login 5 kali. Program keluar."
-                    );
+                    console.log("Anda telah gagal login 5 kali. Anda keluar.");
                     rl.close();
                   } else {
                     console.log(`Password salah`);
