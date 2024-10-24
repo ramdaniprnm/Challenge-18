@@ -1,4 +1,4 @@
-const mainMenuView = {
+export const mainMenuView = {
   optionMainMenu: () => {
     console.log("\n===================== MAIN MENU =====================");
     console.log("[1]. Mahasiswa");

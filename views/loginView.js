@@ -1,4 +1,4 @@
-const loginView = {
+export const loginView = {
   askUsername: (rl, callback) => {
     rl.question("username: ", (username) => {
       callback(username);
@@ -9,6 +9,14 @@ const loginView = {
       callback(password);
     });
   },
+  loginSucceed: (user) => {
+    console.log(
+      `\nLogin successful! Welcome, ${
+        user.username
+      }. "Your access level is: ", ${user.role.toUpperCase()}`
+    );
+  },
+  loginFailed: (message) => {
+    console.log(`Login failed: ${message}`);
+  },
 };
-
-export default loginView; // Use export default for a single export

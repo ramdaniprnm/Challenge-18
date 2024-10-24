@@ -5,7 +5,7 @@ export class userModel {
     const db = new sqlite3.Database("university.db", (err) => {
       if (err) throw err;
       db.get(
-        "SELECT * FROM user WHERE username = ?",
+        "SELECT * FROM users WHERE username = ?",
         [username],
         (err, user) => {
           if (err) throw err;
